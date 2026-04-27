@@ -56,4 +56,73 @@ export const getClientService = async (email) => {
     } catch (e) {
         return serviceResponse(false, e.message || "DB ERROR", {});
     }
-} 
+}
+
+export const updateClientService = async (id, payload) => {
+    try {
+        const isClientUpdated = await Clients.findByIdAndUpdate({ id }, { $set: payload }, { new: true, runValidators: true });
+        if (!isClientUpdated) {
+            return serviceResponse(false, "Client failed to upload", {});
+        }
+        return serviceResponse(true, "Client updated successfully", isClientUpdated);
+    } catch (e) {
+        return serviceResponse(false, e.message || "DB ERROR", {});
+    }
+}
+
+export const incrementClientLead = async (id) => {
+    try {
+        if (!id) {
+            return serviceResponse(false, "Id not found", {});
+        }
+        const incremented = await Clients.findByIdAndUpdate(id, { $inc: { "analytics.leadsGenerated": 1 } }, { new: true, runValidators: true });
+        if (!incremented) {
+            return serviceResponse(false, "Failed to increment", {});
+        }
+        return serviceResponse(true, "Increment successfull", incremented);
+    } catch (e) {
+        return serviceResponse(false, e.message || "DB ERROR", {});
+    }
+}
+
+export const incrementClientMessage = async (id) => {
+    try {
+        if (!id) {
+            return serviceResponse(false, "Id not found", {});
+        }
+        const incremented = await Clients.findByIdAndUpdate(id, { $inc: { "analytics.totalMessages": 1 } }, { new: true, runValidators: true });
+        if (!incremented) {
+            return serviceResponse(false, "Failed to increment", {});
+        }
+        return serviceResponse(true, "Increment successfull", incremented);
+    } catch (e) {
+        return serviceResponse(false, e.message || "DB ERROR", {});
+    }
+}
+
+export const incrementClientConversation = async (id) => {
+    try {
+        if (!id) {
+            return serviceResponse(false, "Id not found", {});
+        }
+        const incremented = await Clients.findByIdAndUpdate(id, { $inc: { "analytics.conversions": 1 } }, { new: true, runValidators: true });
+        if (!incremented) {
+            return serviceResponse(false, "Failed to increment", {});
+        }
+        return serviceResponse(true, "Increment successfull", incremented);
+    } catch (e) {
+        return serviceResponse(false, e.message || "DB ERROR", {});
+    }
+}
+
+export const updateClientBlock = async (id) => {
+    try {
+        const updateStatus = await Clients.findByIdAndUpdate(id, [{ $set: { adminAllowed: { $not: "$adminAllowed" } } }]);
+        if (!updateStatus) {
+            return serviceResponse(false, "Failed to update", {});
+        }
+        return serviceResponse(true, "Update successfull", updateStatus);
+    } catch (e) {
+        return serviceResponse(false, e.message || "DB ERROR", {});
+    }
+}

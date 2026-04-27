@@ -43,7 +43,9 @@ const ClientSchema = new mongoose.Schema({
         googleSheetID: String,
         notifyOwner: { type: Boolean, default: true }
     },
-    active: { type: Boolean, default: true }
+    active: { type: Boolean, default: true },
+    adminAllowed: { type: Boolean, default: false }
+
 }, { timestamps: true });
 
 export default mongoose.model("Client", ClientSchema);
