@@ -6,8 +6,8 @@ const LeadSchema = new mongoose.Schema({
     // CUSTOMER DATA
     name: String,
     phone: { type: String, required: true },
-    interest: String, // JEE, NEET, or 2BHK
-    extractedData: { type: Map, of: String }, // For any extra info AI finds
+    interest: String,
+    extractedData: { type: Map, of: String },
     
     // SALES FUNNEL
     stage: {
@@ -17,7 +17,7 @@ const LeadSchema = new mongoose.Schema({
     },
     goalReached: { type: Boolean, default: false }, 
 
-    // AI MEMORY (Sliding Window)
+    // AI MEMORY
     chatHistory: [
         {
             role: { type: String, enum: ['user', 'model'] },
@@ -28,9 +28,20 @@ const LeadSchema = new mongoose.Schema({
 
     // SYSTEM FLAGS
     isBotActive: { type: Boolean, default: true }, 
-    lastInteraction: { type: Date, default: Date.now }
+    lastInteraction: { type: Date, default: Date.now },
+
+    // TTL FIELD
+    expireAt: {
+        type: Date,
+        required: true
+    }
+
 }, { timestamps: true });
 
+// Unique constraint
 LeadSchema.index({ clientId: 1, phone: 1 }, { unique: true });
+
+// TTL index
+LeadSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
 
 export default mongoose.model("Lead", LeadSchema);

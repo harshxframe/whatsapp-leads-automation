@@ -22,8 +22,6 @@ export const createClient = async (req, res) => {
       responseStyle,
       conversionGoal,
       numberID,
-      accessToken,
-      verifyToken,
       googleSheetID,
       notifyOwner,
     } = req.body;
@@ -41,8 +39,6 @@ export const createClient = async (req, res) => {
       isMissing(responseStyle) ||
       isMissing(conversionGoal) ||
       isMissing(numberID) ||
-      isMissing(accessToken) ||
-      isMissing(verifyToken) ||
       isMissing(googleSheetID) ||
       isMissing(notifyOwner) //
     ) {
@@ -64,8 +60,6 @@ export const createClient = async (req, res) => {
       responseStyle,
       conversionGoal,
       numberID,
-      accessToken,
-      verifyToken,
       googleSheetID,
       notifyOwner,
     };
@@ -131,8 +125,6 @@ export const updateClient = async (req, res) => {
       responseStyle,
       conversionGoal,
       numberID,
-      accessToken,
-      verifyToken,
       googleSheetID,
       notifyOwner,
       active,
@@ -156,8 +148,6 @@ export const updateClient = async (req, res) => {
       isMissing(responseStyle) &&
       isMissing(conversionGoal) &&
       isMissing(numberID) &&
-      isMissing(accessToken) &&
-      isMissing(verifyToken) &&
       isMissing(googleSheetID) &&
       isMissing(active) &&
       isMissing(notifyOwner)
@@ -186,8 +176,6 @@ export const updateClient = async (req, res) => {
 
     // 3. WhatsApp (FLATTENED KEYS)
     if (numberID) updateData["whatsapp.numberID"] = numberID;
-    if (accessToken) updateData["whatsapp.accessToken"] = accessToken;
-    if (verifyToken) updateData["whatsapp.verifyToken"] = verifyToken;
 
     // 4. Automation (FLATTENED KEYS)
     if (googleSheetID) updateData["automation.googleSheetID"] = googleSheetID;

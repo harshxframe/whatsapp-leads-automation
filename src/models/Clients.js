@@ -27,8 +27,6 @@ const ClientSchema = new mongoose.Schema({
     // WHATSAPP CONFIG
     whatsapp: {
         numberID: { type: String, required: true },
-        accessToken: { type: String, required: true }, 
-        verifyToken: { type: String, required: true }
     },
 
     // STATIC ANALYTICS (For Dashboard Cards - Total Numbers)

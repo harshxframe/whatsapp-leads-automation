@@ -27,8 +27,6 @@ export const clientCreationService = async (payload) => {
 
             whatsapp: {
                 numberID: payload.numberID,
-                accessToken: payload.accessToken,
-                verifyToken: payload.verifyToken
             },
 
             automation: {
