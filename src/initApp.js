@@ -7,6 +7,7 @@ import cors from "cors";
 import { invalidRouteHandler, lastErrorHandler } from "./middlewares/errorHandler.js";
 import { healthMiddleware } from "./middlewares/health.js";
 import clientRouter from "./routes/client.route.js";
+import handShakeRouter from "./routes/handshake.route.js";
 
 
 const initApp = async () => {
@@ -17,6 +18,7 @@ const initApp = async () => {
     app.use(express.urlencoded({ extended: true }));
     app.get("/health", healthMiddleware);
     app.use("/app/v1", clientRouter);
+    app.use("/handShake", handShakeRouter);
     app.use(invalidRouteHandler);
     app.use(lastErrorHandler);
     return app;
