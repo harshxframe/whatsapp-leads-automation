@@ -1,5 +1,6 @@
 import {
   clientCreationService,
+  getAllClients,
   getClientService,
   updateClientBlock,
   updateClientService,
@@ -208,7 +209,7 @@ export const blockClient = async (req, res) => {
         .status(400)
         .send(responseBody(400, false, false, "Client ID not found", {}));
     }
-    const isUpdated = await updateClientBlock(id);
+    const isSuccess = await updateClientBlock(id);
     if (isSuccess) {
       return res
         .status(200)
@@ -225,3 +226,57 @@ export const blockClient = async (req, res) => {
       .send(responseBody(500, true, false, e.message || "Server Error", {}));
   }
 };
+
+export const getClients = async (req, res) => {
+  try {
+    // Query params
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    // Optional filters
+    const filter = {};
+
+    if (req.query.active !== undefined) {
+      filter.active = req.query.active === "true";
+    }
+
+    if (req.query.industry) {
+      filter.industry = req.query.industry;
+    }
+
+    if (req.query.search) {
+      filter.businessName = {
+        $regex: req.query.search,
+        $options: "i",
+      };
+    }
+
+    // Service call
+    const result = await getAllClients({ page, limit, filter });
+
+    // Success
+    if (result.success) {
+      return res
+        .status(200)
+        .send(
+          responseBody(200, false, true, result.message, result.data)
+        );
+    }
+
+    // Service failure
+    return res
+      .status(400)
+      .send(
+        responseBody(400, true, false, result.message, {})
+      );
+
+  } catch (e) {
+    return res
+      .status(500)
+      .send(
+        responseBody(500, true, false, e.message || "Server Error", {})
+      );
+  }
+};
+
+

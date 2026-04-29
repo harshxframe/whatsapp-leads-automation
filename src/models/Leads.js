@@ -29,7 +29,9 @@ const LeadSchema = new mongoose.Schema({
     // SYSTEM FLAGS
     isBotActive: { type: Boolean, default: true }, 
     lastInteraction: { type: Date, default: Date.now },
-
+    isEmailSentOnHot: { type: Boolean, default: false}, 
+    isEmailSentOnClosed: { type: Boolean, default: false},
+     
     // TTL FIELD
     expireAt: {
         type: Date,

@@ -15,7 +15,7 @@ app.listen(port, async ()=>{
         });
 
         console.log(`🌐 Public URL: ${session.url()}/handShake/webhook`);
-        console.log("Ise Meta Dashboard ke 'Callback URL' mein copy-paste karo.");
+       // console.log("Ise Meta Dashboard ke 'Callback URL' mein copy-paste karo.");
     } catch (err) {
         console.error("Ngrok Error:", err);
     }

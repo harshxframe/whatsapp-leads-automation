@@ -7,10 +7,13 @@ import cors from "cors";
 import { invalidRouteHandler, lastErrorHandler } from "./middlewares/errorHandler.js";
 import { healthMiddleware } from "./middlewares/health.js";
 import clientRouter from "./routes/client.route.js";
-import handShakeRouter from "./routes/handshake.route.js";
+import handShakeRouter from "./routes/whatsapp.route.js";
+import { onRedis } from "./config/redis.js";
+
 
 
 const initApp = async () => {
+    onRedis();
     await connectDB();
     const app = express();
     app.use(cors())
