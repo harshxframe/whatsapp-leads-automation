@@ -66,7 +66,7 @@ export const updateClientService = async (id, payload) => {
     if (!isClientUpdated) {
       return serviceResponse(false, "Client failed to upload", {});
     }
-    const numberID = updatedClient.whatsapp.numberID; // Get Whatspp ID
+    const numberID = isClientUpdated.whatsapp.numberID; // Get Whatspp ID
     await deleteCachedClient(numberID);
     return serviceResponse(
       true,
@@ -140,11 +140,14 @@ export const updateClientBlock = async (id) => {
     const updateStatus = await Clients.findByIdAndUpdate(
       id,
       [{ $set: { adminAllowed: { $not: "$adminAllowed" } } }],
+      { updatePipeline: true },
       { new: true },
     );
     if (!updateStatus) {
       return serviceResponse(false, "Failed to update", {});
     }
+    const numberID = updateStatus.whatsapp.numberID; // Get Whatspp ID
+    await deleteCachedClient(numberID);
     return serviceResponse(true, "Update successfull", updateStatus);
   } catch (e) {
     return serviceResponse(false, e.message || "DB ERROR", {});
@@ -167,10 +170,10 @@ export const getAllClients = async ({
     const skip = (page - 1) * limit;
 
     // Total count
-    const total = await Client.countDocuments(filter);
+    const total = await Clients.countDocuments(filter);
 
     // Fetch clients
-    const clients = await Client.find(filter)
+    const clients = await Clients.find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)

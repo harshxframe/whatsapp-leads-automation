@@ -50,6 +50,7 @@ export const createClient = async (req, res) => {
 
     //Create the account of client
     const payload = {
+      ownerName,
       email,
       businessName,
       industry,
@@ -66,8 +67,8 @@ export const createClient = async (req, res) => {
     };
 
     const isSuccess = await clientCreationService(payload);
-
-    if (isSuccess) {
+    console.log(isSuccess);
+    if (isSuccess.success) {
       return res
         .status(200)
         .send(
@@ -93,7 +94,7 @@ export const getClient = async (req, res) => {
         .send(responseBody(400, false, false, "Payload not satisfied", {}));
     }
     const isSuccess = await getClientService(email);
-    if (isSuccess) {
+    if (isSuccess.success) {
       return res
         .status(200)
         .send(
@@ -112,7 +113,7 @@ export const getClient = async (req, res) => {
 
 export const updateClient = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.body;
     const {
       ownerName,
       email,
@@ -183,8 +184,8 @@ export const updateClient = async (req, res) => {
     if (notifyOwner !== undefined)
       updateData["automation.notifyOwner"] = notifyOwner;
 
-    const isSuccess = await updateClientService(id, payload);
-    if (isSuccess) {
+    const isSuccess = await updateClientService(id, updateData);
+    if (isSuccess.success) {
       return res
         .status(200)
         .send(
@@ -203,14 +204,14 @@ export const updateClient = async (req, res) => {
 
 export const blockClient = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.body;
     if (!id) {
       return res
         .status(400)
         .send(responseBody(400, false, false, "Client ID not found", {}));
     }
     const isSuccess = await updateClientBlock(id);
-    if (isSuccess) {
+    if (isSuccess.success) {
       return res
         .status(200)
         .send(
@@ -258,25 +259,16 @@ export const getClients = async (req, res) => {
     if (result.success) {
       return res
         .status(200)
-        .send(
-          responseBody(200, false, true, result.message, result.data)
-        );
+        .send(responseBody(200, false, true, result.message, result.data));
     }
 
     // Service failure
     return res
       .status(400)
-      .send(
-        responseBody(400, true, false, result.message, {})
-      );
-
+      .send(responseBody(400, true, false, result.message, {}));
   } catch (e) {
     return res
       .status(500)
-      .send(
-        responseBody(500, true, false, e.message || "Server Error", {})
-      );
+      .send(responseBody(500, true, false, e.message || "Server Error", {}));
   }
 };
-
-

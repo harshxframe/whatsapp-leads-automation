@@ -29,7 +29,6 @@ export const whatsappWebHook = async (req, res) => {
 
     const isDataExtracted = messageResponseParser(body);
     if (isDataExtracted.success) {
-
       const { senderUserName, sendBy, content, messageId, botPhoneId } =
         isDataExtracted.data;
 
@@ -52,6 +51,9 @@ export const whatsappWebHook = async (req, res) => {
         return;
       }
 
+      if (client) {
+        console.log(client);
+      }
     } else {
       console.error("Message: ", isDataExtracted.message, "data: ", {});
       return;
