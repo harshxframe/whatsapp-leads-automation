@@ -9,6 +9,7 @@ import { healthMiddleware } from "./middlewares/health.js";
 import clientRouter from "./routes/client.route.js";
 import handShakeRouter from "./routes/whatsapp.route.js";
 import { onRedis } from "./config/redis.js";
+import analyticsRouter from "./routes/dailyAnalytics.route.js";
 
 
 
@@ -22,6 +23,7 @@ const initApp = async () => {
     app.get("/health", healthMiddleware);
     app.use("/app/v1", clientRouter);
     app.use("/handShake", handShakeRouter);
+    app.use("/analytics", analyticsRouter)
     app.use(invalidRouteHandler);
     app.use(lastErrorHandler);
     return app;

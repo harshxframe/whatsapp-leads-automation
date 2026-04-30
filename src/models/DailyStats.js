@@ -16,7 +16,8 @@ const DailyStatsSchema = new mongoose.Schema({
     metrics: {
         newLeads: { type: Number, default: 0 },
         conversions: { type: Number, default: 0 },
-        messagesHandled: { type: Number, default: 0 }
+        messagesHandled: { type: Number, default: 0 },
+        tokenUsed: { type: Number, default: 0 }
     }
 }, { timestamps: true });
 
