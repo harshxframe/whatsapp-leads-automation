@@ -1,6 +1,6 @@
 import { redis } from "../config/redis.js";
 import { getLeadKey } from "../utils/getLeadKey.js";
-
+import { createLead } from "./leads.service.js";
 
 const TTL = 60 * 60 * 24; // 24 hours
 
@@ -25,7 +25,7 @@ export const cacheLead = async (lead) => {
       lastInteraction: lead.lastInteraction?.toISOString(),
 
       extractedData: JSON.stringify(
-        Object.fromEntries(lead.extractedData || [])
+        Object.fromEntries(lead.extractedData || []),
       ),
 
       chatHistory: JSON.stringify(lead.chatHistory || []),
@@ -65,7 +65,7 @@ export const getCachedLead = async (clientId, phone) => {
       lastInteraction: new Date(data.lastInteraction),
 
       extractedData: new Map(
-        Object.entries(JSON.parse(data.extractedData || "{}"))
+        Object.entries(JSON.parse(data.extractedData || "{}")),
       ),
 
       chatHistory: JSON.parse(data.chatHistory || "[]"),
@@ -89,38 +89,33 @@ export const deleteCachedLead = async (clientId, phone) => {
 };
 
 // UPSERT (BEST PRACTICE)
-export const getLeadWithCache = async (
-  clientId,
-  phone,
-  LeadModel
-) => {
+export const getLeadWithCache = async (clientId, phone, LeadModel) => {
   try {
     // 1. Redis check
     let lead = await getCachedLead(clientId, phone);
 
     if (lead) {
-      console.log("⚡ Lead Cache HIT");
+      console.log("Lead Cache HIT");
       return lead;
     }
 
-    console.log("🐢 Lead Cache MISS");
+    console.log("Lead Cache MISS");
 
     // 2. DB fetch
-    lead = await LeadModel.findOne({ clientId, phone }).lean();
-
-    if (!lead) return null;
+    //  lead = await LeadModel.findOne({ clientId, phone }).lean();
+    lead = await createLead(phone, clientId);
+    console.log(lead);
+    if (!lead.success) return null;
 
     // 3. Save to Redis
-    await cacheLead(lead);
+    await cacheLead(lead.data);
 
-    return lead;
+    return lead.data;
   } catch (e) {
     console.log("Redis fallback error:", e.message);
     return null;
   }
 };
-
-
 
 // 1. After DB update → invalidate cache
 // await deleteCachedLead(clientId, phone);

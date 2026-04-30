@@ -4,6 +4,7 @@ const TTL = 60 * 60 * 10; // 10 hours
 
 // Flatten function (NO nested object storage)
 const flattenClient = (client) => ({
+  _id:client._id,
   ownerName: client.ownerName,
   email: client.email,
   businessName: client.businessName,
@@ -57,6 +58,7 @@ export const getCachedClient = async (numberID) => {
   if (!data || Object.keys(data).length === 0) return null;
 
   return {
+    _id:data._id,
     ownerName: data.ownerName,
     email: data.email,
     businessName: data.businessName,

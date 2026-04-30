@@ -1,6 +1,9 @@
 import { getClientWithCache } from "../services/client.cache.service.js";
 import { messageResponseParser } from "../services/whatsApp.service.js";
 import Clients from "../models/Clients.js";
+import { getLeadWithCache } from "../services/lead.cache.service.js";
+import { isMissing } from "../utils/fieldValidation.js";
+import Leads from "../models/Leads.js";
 
 export const whatsappHandShake = async (req, res) => {
   try {
@@ -33,7 +36,6 @@ export const whatsappWebHook = async (req, res) => {
         isDataExtracted.data;
 
       const client = await getClientWithCache(botPhoneId, Clients);
-
       // 1. Existence check
       if (!client) {
         console.log("Client not found");
@@ -51,19 +53,57 @@ export const whatsappWebHook = async (req, res) => {
         return;
       }
 
-      if (client) {
-        console.log(client);
-        return;
+      //Get the lead data too here first
+      const {
+        ownerName,
+        email,
+        businessName,
+        industry,
+        businessContext,
+        businessDetails,
+        services,
+        aiSettings,
+        conversionGoal,
+        automation,
+        _id,
+      } = client;
 
-
-
-
-
-
-        
-      
-
+      if (
+        isMissing(ownerName) ||
+        isMissing(email) ||
+        isMissing(businessName) ||
+        isMissing(industry) ||
+        isMissing(businessContext) ||
+        isMissing(businessDetails) ||
+        isMissing(services) ||
+        isMissing(aiSettings) ||
+        isMissing(conversionGoal) ||
+        isMissing(automation) ||
+        isMissing(_id)
+      ) {
+        return console.log("Client's database not satisfied");
       }
+      const lead = await getLeadWithCache(botPhoneId, sendBy, Leads);
+      // 1. Existence check
+      if (!lead) {
+        console.log("Lead not found");
+        return;
+      }
+
+      // 2. Business validation
+      if (!lead.isBotActive) {
+        console.log("Agent inactive");
+        return;
+      }
+
+      const {stage, goalReached, isEmailSentOnHot, isEmailSentOnClosed, chatHistory, lastInteraction} = lead;
+
+
+
+
+
+
+
     } else {
       console.error("Message: ", isDataExtracted.message, "data: ", {});
       return;
