@@ -1,44 +1,58 @@
 import mongoose from "mongoose";
 
-const LeadSchema = new mongoose.Schema({
-    clientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Client', required: true },
-    
+const LeadSchema = new mongoose.Schema(
+  {
+    clientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Client",
+      required: true,
+    },
+
     // CUSTOMER DATA
     name: String,
     phone: { type: String, required: true },
     interest: String,
-    extractedData: { type: Map, of: String },
-    
+    extractedData: {
+      type: Map,
+      of: String,
+      validate: {
+        validator: function (v) {
+          return v.size <= 15; // 15 items se zyada allow nahi karega
+        },
+        message: "extractedData cannot have more than 15 items.",
+      },
+    },
     // SALES FUNNEL
     stage: {
-        type: String,
-        enum: ['NEW', 'INTERESTED', 'HOT', 'CLOSED'],
-        default: 'NEW'
+      type: String,
+      enum: ["NEW", "INTERESTED", "HOT", "CLOSED"],
+      default: "NEW",
     },
-    goalReached: { type: Boolean, default: false }, 
+    goalReached: { type: Boolean, default: false },
 
     // AI MEMORY
     chatHistory: [
-        {
-            role: { type: String, enum: ['user', 'model'] },
-            text: String,
-            timestamp: { type: Date, default: Date.now }
-        }
+      {
+        role: { type: String, enum: ["user", "model"] },
+        text: String,
+        timestamp: { type: Date, default: Date.now },
+      },
     ],
 
     // SYSTEM FLAGS
-    isBotActive: { type: Boolean, default: true }, 
+    isBotActive: { type: Boolean, default: true },
     lastInteraction: { type: Date, default: Date.now },
-    isEmailSentOnHot: { type: Boolean, default: false}, 
-    isEmailSentOnClosed: { type: Boolean, default: false},
-     
+    isEmailSentOnHot: { type: Boolean, default: false },
+    isEmailSentOnClosed: { type: Boolean, default: false },
+
     // TTL FIELD
     expireAt: {
-        type: Date,
-        required: true
-    }
-
-}, { timestamps: true });
+      type: Date,
+      required: true,
+    },
+  },
+  { timestamps: true },
+);
 
 // Unique constraint
 LeadSchema.index({ clientId: 1, phone: 1 }, { unique: true });

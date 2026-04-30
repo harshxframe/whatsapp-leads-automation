@@ -53,13 +53,17 @@ export const whatsappWebHook = async (req, res) => {
 
       if (client) {
         console.log(client);
+        return;
+
+      
+
       }
     } else {
       console.error("Message: ", isDataExtracted.message, "data: ", {});
       return;
     }
   } catch (error) {
-    console.error("🔥 Webhook Error: ", error.message);
+    console.error("Webhook Error: ", error.message);
     return;
   }
 };

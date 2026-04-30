@@ -198,3 +198,12 @@ export const getAllClients = async ({
     return serviceResponse(false, error.message || "DB ERROR", {});
   }
 };
+
+// helper: get clientId from numberID
+export const getClientId = async (clientNumber) => {
+  const client = await Clients.findOne({
+    "whatsapp.numberID": clientNumber,
+  }).lean();
+
+  return client?._id || null;
+};
