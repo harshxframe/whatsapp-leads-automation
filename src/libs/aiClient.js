@@ -1,29 +1,35 @@
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
-dotenv.config("../../.env");
+dotenv.config();
 
 const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY
+  apiKey: process.env.GEMINI_API_KEY,
 });
 
-// GEMINI CLIENT
-export async function geminiClient({
-  model = "gemini-2.5-flash",
-  chatHistory
-}) {
+export const generateAIResponse = async ({
+  chatHistory,
+  tools,
+  toolConfig,
+  systemInstruction,
+}) => {
   try {
-    if (!Array.isArray(chatHistory)) {
-      return null;
-    }
     const res = await ai.models.generateContent({
-      model,
+      model: "gemini-2.5-flash",
       contents: chatHistory,
+      // systemInstruction: {
+      //   role: "system",
+      //   parts: [{ text: systemInstruction }], // Tumhara Master Closer Prompt
+      // },
+      config: {
+        tools,
+        toolConfig,
+        temperature: 0.6,
+      },
     });
-    const text = res?.candidates?.[0]?.content?.parts?.[0]?.text || null;
-    return text;
 
+    return res;
   } catch (err) {
-    console.error("Gemini Error:", err.message);
+    console.error("AI Error:", err.message);
     return null;
   }
-}
+};

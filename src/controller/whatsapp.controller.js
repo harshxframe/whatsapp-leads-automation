@@ -4,6 +4,9 @@ import Clients from "../models/Clients.js";
 import { getLeadWithCache } from "../services/lead.cache.service.js";
 import { isMissing } from "../utils/fieldValidation.js";
 import Leads from "../models/Leads.js";
+import { SYSTEM_PROMPT } from "../utils/systemPrompt.js";
+import { historyNormalizer } from "../utils/chatHistoryNormiliser.js";
+import { processLeadMessage } from "../utils/leadHandler.js";
 
 export const whatsappHandShake = async (req, res) => {
   try {
@@ -83,7 +86,7 @@ export const whatsappWebHook = async (req, res) => {
       ) {
         return console.log("Client's database not satisfied");
       }
-      const lead = await getLeadWithCache(botPhoneId, sendBy, Leads);
+      const lead = await getLeadWithCache(_id, sendBy, Leads);
       // 1. Existence check
       if (!lead) {
         console.log("Lead not found");
@@ -96,7 +99,62 @@ export const whatsappWebHook = async (req, res) => {
         return;
       }
 
-      const {stage, goalReached, isEmailSentOnHot, isEmailSentOnClosed, chatHistory, lastInteraction} = lead;
+      const {
+        name,
+        phone,
+        interest,
+        extractedData,
+        stage,
+        goalReached,
+        isEmailSentOnHot,
+        isEmailSentOnClosed,
+        chatHistory,
+        lastInteraction,
+      } = lead;
+
+      // finaly we have here all required data to take next step.
+      // Now we will move it to gemini, Prepare a tampalate
+      const systemInstruction_sy = SYSTEM_PROMPT(
+        businessName,
+        name,
+        interest,
+        extractedData,
+        stage,
+        conversionGoal,
+        aiSettings.tone,
+        aiSettings.responseStyle,
+        aiSettings.language,
+        businessContext,
+        businessDetails,
+        ownerName,
+        services,
+        industry
+      );
+      let finalChatHistory = [];
+
+      // system Instruction
+      // chatHistory
+      if (chatHistory.length === 0) {
+        finalChatHistory.push(
+          ...historyNormalizer([{ role: "user", content: content }]),
+        );
+      } else {
+        finalChatHistory.push(...historyNormalizer(chatHistory));
+      }
+      finalChatHistory.unshift(...historyNormalizer([{ role: "model", content: systemInstruction_sy }]))
+      const userResponse = await processLeadMessage(
+        finalChatHistory,
+        systemInstruction_sy,
+      );
+      if (userResponse) {
+        return console.log("AI Response: " + userResponse);
+      }
+      return console.log("AI Response ERROR " + userResponse);
+
+
+      
+
+
 
 
 

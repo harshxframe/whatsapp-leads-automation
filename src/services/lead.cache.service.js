@@ -93,6 +93,8 @@ export const getLeadWithCache = async (clientId, phone, LeadModel) => {
   try {
     // 1. Redis check
     let lead = await getCachedLead(clientId, phone);
+    console.log("Leads cache cliendId"+clientId);
+    console.log("Leads cache phone"+phone);
 
     if (lead) {
       console.log("Lead Cache HIT");

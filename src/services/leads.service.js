@@ -5,11 +5,11 @@ import { getExpireDate } from "../utils/getExpireDate.js";
 
 
 // CREATE LEAD
-export const createLead = async (senderNumber, clientNumber) => {
+export const createLead = async (senderNumber, clientId) => {
   try {
-    const clientId = await getClientId(clientNumber);
+    // const clientId = await getClientId(clientNumber);
     if (!clientId)
-      return serviceResponse(false, "Client not found", {});
+      return serviceResponse(false, "ClientID not found", {});
 
     let lead = await Leads.findOne({ clientId, phone: senderNumber });
 
