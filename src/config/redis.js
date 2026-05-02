@@ -1,8 +1,15 @@
 import Redis from "ioredis";
+import dotenv from "dotenv";
+dotenv.config();
 
-const redis = new Redis({
+const redisConnection = {
   host: process.env.REDIS_HOST || "127.0.0.1",
   port: process.env.REDIS_PORT || 6379,
+};
+
+const redis = new Redis({
+  host: redisConnection.host,
+  port: redisConnection.port,
 
   retryStrategy(times) {
     console.log(`Retry attempt: ${times}`);
@@ -13,6 +20,13 @@ const redis = new Redis({
     return Math.min(times * 100, 2000);
   },
 });
+
+const configuration = {
+  attempts: 2,
+  backoff: { type: "exponential", delay: 2000 },
+  removeOnComplete: true,
+  removeOnFail: true,
+}; // configuration for Queue Worker
 
 let redisListenersAttached = false;
 
@@ -41,4 +55,4 @@ const onRedis = () => {
   });
 };
 
-export { onRedis, redis };
+export { onRedis, redis, redisConnection, configuration };
