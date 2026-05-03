@@ -78,12 +78,11 @@ const LeadSchema = new mongoose.Schema(
     interest: { type: String, default: "" },
 
     extractedData: {
-      type: Map,
-      of: String,
-      default: new Map(), // ✅ important
+      type: [String],
+      default: [],
       validate: {
         validator: function (v) {
-          return v.size <= 15;
+          return v.length <= 15;
         },
         message: "extractedData cannot have more than 15 items.",
       },
@@ -131,7 +130,7 @@ const LeadSchema = new mongoose.Schema(
       },
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Unique constraint

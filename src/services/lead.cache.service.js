@@ -88,13 +88,71 @@ export const deleteCachedLead = async (clientId, phone) => {
   }
 };
 
+// UPDATE LEAD
+export const updateCachedLead = async (clientId, phone, updateData) => {
+  try {
+    const key = getLeadKey(clientId, phone);
+
+    await redis.hset(key, updateData);
+    await redis.expire(key, TTL);
+
+    return true;
+  } catch (e) {
+    console.log("Redis delete error:", e.message);
+    return false;
+  }
+};
+
+//UPDATE EXTRACTED FACTS
+export const updateExtractedFacts = async (clientId, phone, newFact) => {
+  try {
+    const key = getLeadKey(clientId, phone);
+
+    const exsitingEF = await redis.hget(key, "extractedData");
+    let facts = exsitingEF ? JSON.parse(exsitingEF) : [];
+
+    if (!facts.includes(newFact)) {
+      facts.push(newFact);
+    }
+
+    facts = facts.slice(-15);
+
+    await redis.hset(key, { extractedData: JSON.stringify(facts) });
+
+    return true;
+  } catch (e) {
+    console.log("Redis update error:", e.message);
+    return false;
+  }
+};
+
+//UPDATE AND SAVE CHAT HISTORY
+export const saveChatHistory = async (clientId, phone, chats) => {
+  // Chat is an object {"role":.., "content":...}
+  try {
+    const key = getLeadKey(clientId, phone);
+    const history = await redis.hget(key, "chatHistory");
+
+    let tempHistory = history ? JSON.parse(history) : [];
+
+    tempHistory.push(...chats);
+    tempHistory = tempHistory.slice(-15);
+
+    await redis.hset(key, { chatHistory: JSON.stringify(tempHistory) });
+    return true;
+  } catch (e) {
+    console.log("Redis chat histry update error:", e.message);
+    return false;
+  }
+};
+
 // UPSERT (BEST PRACTICE)
 export const getLeadWithCache = async (clientId, phone, LeadModel) => {
   try {
     // 1. Redis check
     let lead = await getCachedLead(clientId, phone);
-    console.log("Leads cache cliendId"+clientId);
-    console.log("Leads cache phone"+phone);
+    console.log("Leads cache cliendId" + clientId);
+    console.log("Leads cache phone" + phone);
 
     if (lead) {
       console.log("Lead Cache HIT");

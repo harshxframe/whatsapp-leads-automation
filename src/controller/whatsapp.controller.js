@@ -1,7 +1,10 @@
 import { getClientWithCache } from "../services/client.cache.service.js";
 import { messageResponseParser } from "../services/whatsApp.service.js";
 import Clients from "../models/Clients.js";
-import { getLeadWithCache } from "../services/lead.cache.service.js";
+import {
+  getLeadWithCache,
+  saveChatHistory,
+} from "../services/lead.cache.service.js";
 import { isMissing } from "../utils/fieldValidation.js";
 import Leads from "../models/Leads.js";
 import { SYSTEM_PROMPT } from "../utils/systemPrompt.js";
@@ -86,6 +89,9 @@ export const whatsappWebHook = async (req, res) => {
       ) {
         return console.log("Client's database not satisfied");
       }
+
+      //mark message read here....
+
       const lead = await getLeadWithCache(_id, sendBy, Leads);
       // 1. Existence check
       if (!lead) {
@@ -128,7 +134,7 @@ export const whatsappWebHook = async (req, res) => {
         businessDetails,
         ownerName,
         services,
-        industry
+        industry,
       );
       let finalChatHistory = [];
 
@@ -140,28 +146,36 @@ export const whatsappWebHook = async (req, res) => {
         );
       } else {
         finalChatHistory.push(...historyNormalizer(chatHistory));
+        finalChatHistory.push(
+          ...historyNormalizer([{ role: "user", content: content }]),
+        );
       }
-      finalChatHistory.unshift(...historyNormalizer([{ role: "model", content: systemInstruction_sy }]))
+      finalChatHistory.unshift(
+        ...historyNormalizer([
+          { role: "model", content: systemInstruction_sy },
+        ]),
+      );
+      //collecting active chat object of user.
+      const latestUserChatObject = { role: "user", content: content };
       const userResponse = await processLeadMessage(
         finalChatHistory,
         systemInstruction_sy,
+        _id,
+        sendBy,
       );
+
       if (userResponse) {
+        const aiResponseObject = { role: "model", content: userResponse };
+        await saveChatHistory(_id, sendBy, [
+          latestUserChatObject,
+          aiResponseObject,
+        ]);
+        // Now we succfully saved chat histoey now have to work to update extracted feilds and then update field in cache.
+        // Then move on to to send to workers to save in DBs.
+
         return console.log("AI Response: " + userResponse);
       }
       return console.log("AI Response ERROR " + userResponse);
-
-
-      
-
-
-
-
-
-
-
-
-
     } else {
       console.error("Message: ", isDataExtracted.message, "data: ", {});
       return;
