@@ -1,0 +1,1 @@
+export const toBool = (val) => val === true || String(val).toLowerCase() === "true";

@@ -6,6 +6,8 @@ const redisConnection = {
   host: process.env.REDIS_HOST || "127.0.0.1",
   port: process.env.REDIS_PORT || 6379,
 };
+ 
+const workerConcurreny = 5;
 
 const redis = new Redis({
   host: redisConnection.host,
@@ -22,7 +24,7 @@ const redis = new Redis({
 });
 
 const configuration = {
-  attempts: 2,
+  attempts: 1,
   backoff: { type: "exponential", delay: 2000 },
   removeOnComplete: true,
   removeOnFail: true,
@@ -55,4 +57,4 @@ const onRedis = () => {
   });
 };
 
-export { onRedis, redis, redisConnection, configuration };
+export { onRedis, redis, redisConnection, configuration, workerConcurreny };

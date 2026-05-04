@@ -10,6 +10,7 @@ import Leads from "../models/Leads.js";
 import { SYSTEM_PROMPT } from "../utils/systemPrompt.js";
 import { historyNormalizer } from "../utils/chatHistoryNormiliser.js";
 import { processLeadMessage } from "../utils/leadHandler.js";
+import { leadsDbQueue } from "../jobs/queue/dbQueue.js";
 
 export const whatsappHandShake = async (req, res) => {
   try {
@@ -157,26 +158,28 @@ export const whatsappWebHook = async (req, res) => {
       );
       //collecting active chat object of user.
       const latestUserChatObject = { role: "user", content: content };
+      await leadsDbQueue.add("Save History in queue", {
+        history: latestUserChatObject,
+        metaData: { clientId: _id, senderNumber: sendBy },
+      });
       const userResponse = await processLeadMessage(
         finalChatHistory,
         systemInstruction_sy,
         _id,
         sendBy,
       );
-console.log(systemInstruction_sy);
       if (userResponse) {
         const aiResponseObject = { role: "model", content: userResponse };
+        await leadsDbQueue.add("Save History in queue", {
+          history: aiResponseObject,
+          metaData: { clientId: _id, senderNumber: sendBy },
+        });
         await saveChatHistory(_id, sendBy, [
           latestUserChatObject,
           aiResponseObject,
         ]);
         // Now we successfully saved chat history and implemented updated data save in Redis Cache
         // Then move on to to send to workers to save in DBs. Sync Done
-        
-
-
-
-
 
         return console.log("AI Response: " + userResponse);
       }

@@ -102,39 +102,31 @@ export const updateLeadChatHistroy = async (
   }
 };
 
-export const updateLeadsExtractedFact = async (
-  senderNumber,
-  clientId,
-  facts,
-) => {
+export const updateLeadsExtractedFact = async (senderNumber, clientId, facts) => {
   try {
-    // 1. add unique
-    await Leads.findOneAndUpdate(
-      { clientId, phone:senderNumber },
-      {
-        $addToSet: { extractedData: newFact },
-      },
-    );
-
-    // 2. trim to last 15
+    console.log("Getted fact: "+facts);
     const updated = await Leads.findOneAndUpdate(
-      { clientId, phone:senderNumber },
+      { 
+        clientId, 
+        phone: senderNumber,
+        extractedData: { $ne: facts } // Only update if the fact doesn't already exist (simulates $addToSet)
+      },
       {
         $push: {
           extractedData: {
-            $each: [],
-            $slice: -15,
+            $each: [facts],
+            $slice: -15, // Keeps only the last 15 items
           },
         },
       },
-      { new: true },
+      { new: true }
     );
 
     if (!updated) {
-      return serviceResponse(false, "Lead not found", {});
+      return serviceResponse(false, "Fact already exists or Lead not found", {});
     }
 
-    return serviceResponse(true, "Extracted facts updated", updated);
+    return serviceResponse(true, "Extracted facts updated and trimmed", updated);
   } catch (e) {
     return serviceResponse(false, e.message || "DB ERROR", {});
   }

@@ -24,10 +24,7 @@ export const cacheLead = async (lead) => {
 
       lastInteraction: lead.lastInteraction?.toISOString(),
 
-      extractedData: JSON.stringify(
-        Object.fromEntries(lead.extractedData || []),
-      ),
-
+      extractedData: JSON.stringify(lead.extractedData || []),
       chatHistory: JSON.stringify(lead.chatHistory || []),
     };
 
@@ -92,8 +89,14 @@ export const deleteCachedLead = async (clientId, phone) => {
 export const updateCachedLead = async (clientId, phone, updateData) => {
   try {
     const key = getLeadKey(clientId, phone);
+    let tempUpdateObj = {};
+    for (let key in updateData) {
+      if (key !== "extractedData") {
+        tempUpdateObj[key] = updateData[key];
+      }
+    }
 
-    await redis.hset(key, updateData);
+    await redis.hset(key, tempUpdateObj);
     await redis.expire(key, TTL);
 
     return true;

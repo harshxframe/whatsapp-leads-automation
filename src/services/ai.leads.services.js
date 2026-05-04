@@ -1,10 +1,17 @@
+import { cli } from "winston/lib/winston/config/index.js";
 import { leadsDbQueue } from "../jobs/queue/dbQueue.js";
 import { isMissing } from "../utils/fieldValidation.js";
-import { updateCachedLead } from "./lead.cache.service.js";
+import {
+  updateCachedLead,
+  updateExtractedFacts,
+} from "./lead.cache.service.js";
 
 export const handleLeadActions = async (data, cliendId, phone) => {
   try {
-    let updateToCache = {};
+    let updateToCache = {
+      metaData: { clientId: cliendId, senderNumber: phone },
+    };
+
     if (data.name) {
       updateToCache.name = data.name;
       console.log("Update Name:", data.name);
@@ -16,7 +23,7 @@ export const handleLeadActions = async (data, cliendId, phone) => {
     }
 
     if (data.extractedFact) {
-      updateToCache.extractedFact = data.extractedFact;
+      updateToCache.extractedData = data.extractedFact;
       console.log("Save Extracted Data:", data.extractedFact);
     }
 
@@ -47,6 +54,9 @@ export const handleLeadActions = async (data, cliendId, phone) => {
     if (updateToCache) {
       await updateCachedLead(cliendId, phone, updateToCache); // To publish in cache for speed
       await leadsDbQueue.add("perform DB leads DB operations", updateToCache); // To publish updated in DB in worker
+    }
+    if (updateToCache.extractedData) {
+      await updateExtractedFacts(cliendId, phone, updateToCache.extractedData); // Top publish in cache
     }
     return true;
   } catch (e) {
