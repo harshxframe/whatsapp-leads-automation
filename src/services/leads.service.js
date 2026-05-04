@@ -1,15 +1,13 @@
 import Leads from "../models/Leads.js";
-import {serviceResponse} from "../utils/serviceResponseBody.js";
+import { serviceResponse } from "../utils/serviceResponseBody.js";
 import { getClientId } from "./client.service.js";
 import { getExpireDate } from "../utils/getExpireDate.js";
-
 
 // CREATE LEAD
 export const createLead = async (senderNumber, clientId) => {
   try {
     // const clientId = await getClientId(clientNumber);
-    if (!clientId)
-      return serviceResponse(false, "ClientID not found", {});
+    if (!clientId) return serviceResponse(false, "ClientID not found", {});
 
     let lead = await Leads.findOne({ clientId, phone: senderNumber });
 
@@ -33,8 +31,7 @@ export const createLead = async (senderNumber, clientId) => {
 export const getLead = async (senderNumber, clientNumber) => {
   try {
     const clientId = await getClientId(clientNumber);
-    if (!clientId)
-      return serviceResponse(false, "Client not found", {});
+    if (!clientId) return serviceResponse(false, "Client not found", {});
 
     const lead = await Leads.findOne({ clientId, phone: senderNumber });
 
@@ -46,192 +43,99 @@ export const getLead = async (senderNumber, clientNumber) => {
   }
 };
 
-// UPDATE NAME
-export const updateLeadName = async (clientId, phone, name) => {
+export const updateLead = async (senderNumber, clientId, updateObj) => {
   try {
-    const updated = await Leads.findOneAndUpdate(
-      { clientId, phone },
-      { $set: { name } },
-      { new: true }
-    );
-
-    if (!updated)
-      return serviceResponse(false, "Lead not found", {});
-
-    return serviceResponse(true, "Name updated", updated);
-  } catch (e) {
-    return serviceResponse(false, e.message, {});
-  }
-};
-
-// UPDATE INTEREST
-export const updateLeadInterest = async (clientId, phone, interest) => {
-  try {
-    const updated = await Leads.findOneAndUpdate(
-      { clientId, phone },
-      { $set: { interest } },
-      { new: true }
-    );
-
-    return serviceResponse(true, "Interest updated", updated);
-  } catch (e) {
-    return serviceResponse(false, e.message, {});
-  }
-};
-
-// UPDATE STAGE
-export const updateLeadStage = async (clientId, phone, stage) => {
-  try {
-    const updated = await Leads.findOneAndUpdate(
-      { clientId, phone },
-      { $set: { stage } },
-      { new: true }
-    );
-
-    return serviceResponse(true, "Stage updated", updated);
-  } catch (e) {
-    return serviceResponse(false, e.message, {});
-  }
-};
-
-// GOAL REACHED
-export const updateGoalReached = async (clientId, phone, value) => {
-  try {
-    const updated = await Leads.findOneAndUpdate(
-      { clientId, phone },
-      { $set: { goalReached: value } },
-      { new: true }
-    );
-
-    return serviceResponse(true, "Goal updated", updated);
-  } catch (e) {
-    return serviceResponse(false, e.message, {});
-  }
-};
-
-//EXTRACTED DATA (MAX 15)
-export const updateExtractedData = async (
-  clientId,
-  phone,
-  key,
-  value
-) => {
-  try {
-    const lead = await Leads.findOne({ clientId, phone });
-
-    if (!lead)
-      return serviceResponse(false, "Lead not found", {});
-
-    const data = lead.extractedData || new Map();
-
-    if (!data.has(key) && data.size >= 15) {
-      return serviceResponse(false, "Max extractedData limit reached", {});
+    if (!updateObj || Object.keys(updateObj).length === 0) {
+      return serviceResponse(false, "No updates find to update", {});
     }
-
-    data.set(key, value);
-
-    lead.extractedData = data;
-    await lead.save();
-
-    return serviceResponse(true, "Extracted data updated", lead);
-  } catch (e) {
-    return serviceResponse(false, e.message, {});
-  }
-};
-
-// CHAT HISTORY (MAX 15)
-export const chatHistoryPush = async (
-  clientId,
-  phone,
-  text,
-  role
-) => {
-  try {
-    const lead = await Leads.findOne({ clientId, phone });
-
-    if (!lead)
-      return serviceResponse(false, "Lead not found", {});
-
-    const history = lead.chatHistory || [];
-
-    if (history.length >= 15) {
-      history.shift(); // remove oldest
-    }
-
-    history.push({ text, role });
-
-    lead.chatHistory = history;
-    await lead.save();
-
-    return serviceResponse(true, "Chat updated", lead);
-  } catch (e) {
-    return serviceResponse(false, e.message, {});
-  }
-};
-
-// BOT ACTIVE
-export const updateBotActive = async (clientId, phone, value) => {
-  try {
-    const updated = await Leads.findOneAndUpdate(
-      { clientId, phone },
-      { $set: { isBotActive: value } },
-      { new: true }
-    );
-
-    return serviceResponse(true, "Bot status updated", updated);
-  } catch (e) {
-    return serviceResponse(false, e.message, {});
-  }
-};
-
-//LAST INTERACTION + TTL
-export const updateLastIntrectionAndExpire = async (
-  clientId,
-  phone
-) => {
-  try {
-    const updated = await Leads.findOneAndUpdate(
-      { clientId, phone },
+    const updateLeadDB = await Leads.findOneAndUpdate(
+      { clientId, phone: senderNumber },
       {
-        $set: {
-          lastInteraction: new Date(),
-          expireAt: getExpireDate(),
+        $set: updateObj,
+      },
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+    if (!updateLeadDB) {
+      return serviceResponse(false, "Lead not found", {});
+    }
+    return serviceResponse(true, "Lead update successfully", updateLeadDB);
+  } catch (e) {
+    return serviceResponse(false, e.message || "DB ERROR", {});
+  }
+};
+
+export const updateLeadChatHistroy = async (
+  senderNumber,
+  clientId,
+  history,
+) => {
+  try {
+    if (history.length === 0) {
+      return serviceResponse(false, "History items not found", {});
+    }
+    const updateHistory = await Leads.findOneAndUpdate(
+      {
+        clientId,
+        phone: senderNumber,
+      },
+      {
+        $push: {
+          chatHistory: {
+            $each: history,
+            $slice: -15,
+          },
         },
       },
-      { new: true }
+      {
+        new: true,
+      },
     );
-
-    return serviceResponse(true, "Interaction updated", updated);
+    if (!updateHistory) {
+      return serviceResponse(false, "Failed to update chat history", {});
+    }
+    return serviceResponse(true, "Chat history updated successfully", {});
   } catch (e) {
-    return serviceResponse(false, e.message, {});
+    return serviceResponse(false, e.message || "DB ERROR", {});
   }
 };
 
-// EMAIL FLAGS
-export const updateEmailOnHot = async (clientId, phone, value) => {
+export const updateLeadsExtractedFact = async (
+  senderNumber,
+  clientId,
+  facts,
+) => {
   try {
-    const updated = await Leads.findOneAndUpdate(
-      { clientId, phone },
-      { $set: { isEmailSentOnHot: value } },
-      { new: true }
+    // 1. add unique
+    await Leads.findOneAndUpdate(
+      { clientId, phone:senderNumber },
+      {
+        $addToSet: { extractedData: newFact },
+      },
     );
 
-    return serviceResponse(true, "Hot email flag updated", updated);
-  } catch (e) {
-    return serviceResponse(false, e.message, {});
-  }
-};
-
-export const updateEmailOnClose = async (clientId, phone, value) => {
-  try {
+    // 2. trim to last 15
     const updated = await Leads.findOneAndUpdate(
-      { clientId, phone },
-      { $set: { isEmailSentOnClosed: value } },
-      { new: true }
+      { clientId, phone:senderNumber },
+      {
+        $push: {
+          extractedData: {
+            $each: [],
+            $slice: -15,
+          },
+        },
+      },
+      { new: true },
     );
 
-    return serviceResponse(true, "Close email flag updated", updated);
+    if (!updated) {
+      return serviceResponse(false, "Lead not found", {});
+    }
+
+    return serviceResponse(true, "Extracted facts updated", updated);
   } catch (e) {
-    return serviceResponse(false, e.message, {});
+    return serviceResponse(false, e.message || "DB ERROR", {});
   }
 };

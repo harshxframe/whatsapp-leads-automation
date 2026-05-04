@@ -163,15 +163,20 @@ export const whatsappWebHook = async (req, res) => {
         _id,
         sendBy,
       );
-
+console.log(systemInstruction_sy);
       if (userResponse) {
         const aiResponseObject = { role: "model", content: userResponse };
         await saveChatHistory(_id, sendBy, [
           latestUserChatObject,
           aiResponseObject,
         ]);
-        // Now we succfully saved chat histoey now have to work to update extracted feilds and then update field in cache.
-        // Then move on to to send to workers to save in DBs.
+        // Now we successfully saved chat history and implemented updated data save in Redis Cache
+        // Then move on to to send to workers to save in DBs. Sync Done
+        
+
+
+
+
 
         return console.log("AI Response: " + userResponse);
       }

@@ -1,3 +1,4 @@
+import { leadsDbQueue } from "../jobs/queue/dbQueue.js";
 import { isMissing } from "../utils/fieldValidation.js";
 import { updateCachedLead } from "./lead.cache.service.js";
 
@@ -6,6 +7,7 @@ export const handleLeadActions = async (data, cliendId, phone) => {
     let updateToCache = {};
     if (data.name) {
       updateToCache.name = data.name;
+      console.log("Update Name:", data.name);
     }
 
     if (data.interest) {
@@ -42,9 +44,11 @@ export const handleLeadActions = async (data, cliendId, phone) => {
       console.log("Send CLOSED email");
     }
 
-    await updateCachedLead(cliendId, phone, updateToCache);
+    if (updateToCache) {
+      await updateCachedLead(cliendId, phone, updateToCache); // To publish in cache for speed
+      await leadsDbQueue.add("perform DB leads DB operations", updateToCache); // To publish updated in DB in worker
+    }
     return true;
-
   } catch (e) {
     console.error("Service Error:", e.message);
     return false;
