@@ -102,7 +102,7 @@ const LeadSchema = new mongoose.Schema(
       type: [
         {
           role: { type: String, enum: ["user", "model"] },
-          text: { type: String, default: "" },
+          content: { type: String, default: "" },
         },
       ],
       default: [], // important

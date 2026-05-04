@@ -20,7 +20,7 @@ export const processLeadMessage = async (
       },
     },
   });
-
+console.log(JSON.stringify(res));
   const call = res?.functionCalls?.[0];
 
   if (!call) {

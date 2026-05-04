@@ -11,20 +11,21 @@ export const markMessageAsRead = async (phoneId, messageId, accessToken) => {
       message_id: messageId,
     };
 
-    const response = await axios.post(url, data, {
+    await axios.post(url, data, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
     });
 
-    return response.data;
+    return true;
   } catch (error) {
     // Ise log zaroor karna taaki debugging mein asani ho
     console.error(
       "Error marking message as read:",
       error.response?.data || error.message,
     );
+    return false;
   }
 };
 
@@ -76,4 +77,47 @@ export const messageResponseParser = (body) => {
     console.log(`ERROR while whatsapp response parsing ${e}`);
     return serviceResponse(false, "Error in Whatsapp response parsing", {});
   }
+};
+
+/**
+ * Send a standard text message to a user
+ */
+export const sendWhatsAppMessage = async (phoneId, recipientNumber, messageText, accessToken) => {
+  try {
+    const url = `https://graph.facebook.com/v20.0/${phoneId}/messages`;
+
+    const data = {
+      messaging_product: "whatsapp",
+      recipient_type: "individual",
+      to: recipientNumber,
+      type: "text",
+      text: {
+        preview_url: false,
+        body: messageText,
+      },
+    };
+
+    const response = await axios.post(url, data, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error sending WhatsApp message:", error.response?.data || error.message);
+    throw error; // Throwing so you can handle it in the worker
+  }
+};
+
+/**
+ * NOTE: Typing Indicator is NOT natively supported in WhatsApp Cloud API as of now.
+ * However, professional bots often use "Mark as Read" to show the user that 
+ * the message has been received and is being processed.
+ */
+export const simulateTypingEffect = () => {
+  // Logic: Delay the response slightly on the backend to feel more human
+  // This is what 99% of AI bots do since native typing isn't available.
+  return new Promise((resolve) => setTimeout(resolve, 1500)); 
 };

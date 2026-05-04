@@ -1,5 +1,10 @@
 import { getClientWithCache } from "../services/client.cache.service.js";
-import { messageResponseParser } from "../services/whatsApp.service.js";
+import {
+  markMessageAsRead,
+  messageResponseParser,
+  sendWhatsAppMessage,
+  simulateTypingEffect,
+} from "../services/whatsApp.service.js";
 import Clients from "../models/Clients.js";
 import {
   getLeadWithCache,
@@ -92,6 +97,12 @@ export const whatsappWebHook = async (req, res) => {
       }
 
       //mark message read here....
+      const r = await markMessageAsRead(
+        botPhoneId,
+        messageId,
+        process.env.WHATSAPP_MASTER_TOKEN,
+      );
+      console.log("SW" + r);
 
       const lead = await getLeadWithCache(_id, sendBy, Leads);
       // 1. Existence check
@@ -158,10 +169,6 @@ export const whatsappWebHook = async (req, res) => {
       );
       //collecting active chat object of user.
       const latestUserChatObject = { role: "user", content: content };
-      await leadsDbQueue.add("Save History in queue", {
-        history: latestUserChatObject,
-        metaData: { clientId: _id, senderNumber: sendBy },
-      });
       const userResponse = await processLeadMessage(
         finalChatHistory,
         systemInstruction_sy,
@@ -171,7 +178,7 @@ export const whatsappWebHook = async (req, res) => {
       if (userResponse) {
         const aiResponseObject = { role: "model", content: userResponse };
         await leadsDbQueue.add("Save History in queue", {
-          history: aiResponseObject,
+          history: [latestUserChatObject, aiResponseObject],
           metaData: { clientId: _id, senderNumber: sendBy },
         });
         await saveChatHistory(_id, sendBy, [
@@ -180,7 +187,17 @@ export const whatsappWebHook = async (req, res) => {
         ]);
         // Now we successfully saved chat history and implemented updated data save in Redis Cache
         // Then move on to to send to workers to save in DBs. Sync Done
+        // 2. Simulate human-like delay (Optional but feels better)
+        await simulateTypingEffect();
+        // 3. Send the AI generated response
+        const result = await sendWhatsAppMessage(
+          botPhoneId,
+          sendBy,
+          userResponse,
+          process.env.WHATSAPP_MASTER_TOKEN,
+        );
 
+        console.log("Message sent successfully! ID:", result.messages[0].id);
         return console.log("AI Response: " + userResponse);
       }
       return console.log("AI Response ERROR " + userResponse);
