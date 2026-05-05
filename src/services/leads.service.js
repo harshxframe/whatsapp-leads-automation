@@ -85,7 +85,7 @@ export const updateLeadChatHistroy = async (
         $push: {
           chatHistory: {
             $each: history,
-            $slice: -15,
+            $slice: -7,
           },
         },
       },
@@ -115,7 +115,7 @@ export const updateLeadsExtractedFact = async (senderNumber, clientId, facts) =>
         $push: {
           extractedData: {
             $each: [facts],
-            $slice: -15, // Keeps only the last 15 items
+            $slice: -10, // Keeps only the last 15 items
           },
         },
       },

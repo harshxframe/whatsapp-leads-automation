@@ -61,9 +61,7 @@ export const getCachedLead = async (clientId, phone) => {
 
       lastInteraction: new Date(data.lastInteraction),
 
-      extractedData: new Map(
-        Object.entries(JSON.parse(data.extractedData || "{}")),
-      ),
+      extractedData: JSON.parse(data.extractedData || "[]"),
 
       chatHistory: JSON.parse(data.chatHistory || "[]"),
     };
@@ -118,7 +116,7 @@ export const updateExtractedFacts = async (clientId, phone, newFact) => {
       facts.push(newFact);
     }
 
-    facts = facts.slice(-15);
+    facts = facts.slice(-10);
 
     await redis.hset(key, { extractedData: JSON.stringify(facts) });
 
@@ -139,7 +137,7 @@ export const saveChatHistory = async (clientId, phone, chats) => {
     let tempHistory = history ? JSON.parse(history) : [];
 
     tempHistory.push(...chats);
-    tempHistory = tempHistory.slice(-15);
+    tempHistory = tempHistory.slice(-7);
 
     await redis.hset(key, { chatHistory: JSON.stringify(tempHistory) });
     return true;

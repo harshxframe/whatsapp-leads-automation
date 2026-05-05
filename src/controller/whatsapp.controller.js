@@ -184,6 +184,7 @@ export const whatsappWebHook = async (req, res) => {
         systemInstruction_sy,
         _id,
         sendBy,
+        lead
       );
       if (userResponse) {
         const aiResponseObject = { role: "model", content: userResponse };

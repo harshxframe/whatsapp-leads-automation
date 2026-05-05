@@ -7,6 +7,7 @@ export const processLeadMessage = async (
   systemInstruction,
   _id,
   sendBy,
+  lead,
 ) => {
   const res = await generateAIResponse({
     chatHistory,
@@ -20,7 +21,6 @@ export const processLeadMessage = async (
       },
     },
   });
-console.log(JSON.stringify(res));
   const call = res?.functionCalls?.[0];
 
   if (!call) {
@@ -31,7 +31,7 @@ console.log(JSON.stringify(res));
   const data = call.args;
 
   // RUN IN BACKGROUND
-  handleLeadActions(data, _id, sendBy)
+  handleLeadActions(data, _id, sendBy, lead)
     .then(() => console.log("Actions done"))
     .catch((err) => console.error("Action error:", err));
 
