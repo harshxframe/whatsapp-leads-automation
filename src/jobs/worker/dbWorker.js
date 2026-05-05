@@ -48,8 +48,8 @@ async function dbWorker() {
             interest,
             stage,
             goalReached,
-            dealHotSendEmailToClient,
-            dealClosedSendEmailToClient,
+            isEmailSentOnHot,
+            isEmailSentOnClosed,
           } = job?.data;
           console.log("Worker log:" + JSON.stringify(job?.data));
 
@@ -58,13 +58,13 @@ async function dbWorker() {
           if (interest) finalDataObj["interest"] = interest;
           if (stage) finalDataObj["stage"] = stage;
           if (goalReached) finalDataObj["goalReached"] = goalReached;
-          if (dealHotSendEmailToClient !== undefined)
-            finalDataObj["dealHotSendEmailToClient"] = toBool(
-              dealHotSendEmailToClient,
+          if (isEmailSentOnHot !== undefined)
+            finalDataObj["isEmailSentOnHot"] = toBool(
+              isEmailSentOnHot,
             );
-          if (dealClosedSendEmailToClient !== undefined)
-            finalDataObj["dealClosedSendEmailToClient"] = toBool(
-              dealClosedSendEmailToClient,
+          if (isEmailSentOnClosed !== undefined)
+            finalDataObj["isEmailSentOnClosed"] = toBool(
+              isEmailSentOnClosed,
             );
           logger.info("Operation 1 processing:");
           for (let key in job?.data) {
