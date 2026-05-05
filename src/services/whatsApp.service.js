@@ -82,7 +82,12 @@ export const messageResponseParser = (body) => {
 /**
  * Send a standard text message to a user
  */
-export const sendWhatsAppMessage = async (phoneId, recipientNumber, messageText, accessToken) => {
+export const sendWhatsAppMessage = async (
+  phoneId,
+  recipientNumber,
+  messageText,
+  accessToken,
+) => {
   try {
     const url = `https://graph.facebook.com/v20.0/${phoneId}/messages`;
 
@@ -106,18 +111,66 @@ export const sendWhatsAppMessage = async (phoneId, recipientNumber, messageText,
 
     return response.data;
   } catch (error) {
-    console.error("Error sending WhatsApp message:", error.response?.data || error.message);
+    console.error(
+      "Error sending WhatsApp message:",
+      error.response?.data || error.message,
+    );
     throw error; // Throwing so you can handle it in the worker
   }
 };
 
 /**
  * NOTE: Typing Indicator is NOT natively supported in WhatsApp Cloud API as of now.
- * However, professional bots often use "Mark as Read" to show the user that 
+ * However, professional bots often use "Mark as Read" to show the user that
  * the message has been received and is being processed.
  */
-export const simulateTypingEffect = () => {
-  // Logic: Delay the response slightly on the backend to feel more human
-  // This is what 99% of AI bots do since native typing isn't available.
-  return new Promise((resolve) => setTimeout(resolve, 1500)); 
+export const simulateTypingEffect = (responseText) => {
+  const variance = Math.floor(Math.random() * 10); // Random time
+  const msPerChar = 35 + variance;
+  const baseDelay = 600;
+  const maxDelay = 4500;
+
+  const calculatedDelay = Math.min(
+    baseDelay + responseText.length * msPerChar,
+    maxDelay,
+  );
+
+  return new Promise((resolve) => setTimeout(resolve, calculatedDelay));
+};
+
+export const sendTypingIndicator = async (
+  recipientId, // Note: Ye function wese bhi status update ke liye messageId leta hai
+  messageId,
+  accessToken,
+  phoneNumberId,
+) => {
+  try {
+    // Make sure your version matches the one in your Meta Dashboard (e.g., v25.0)
+    const url = `https://graph.facebook.com/v25.0/${phoneNumberId}/messages`;
+
+    await axios.post(
+      url,
+      {
+        messaging_product: "whatsapp",
+        status: "read", // Status update
+        message_id: messageId, // Specific message ID
+        typing_indicator: {
+          type: "text", // Documentation format
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+    return true;
+  } catch (error) {
+    console.error(
+      "Error sending typing indicator:",
+      error.response?.data || error.message,
+    );
+    return false;
+  }
 };
