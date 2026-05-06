@@ -41,7 +41,7 @@ export const incrementDailyConversion = async (clientId) => {
 };
 
 // INCREMENT MESSAGES + TOKENS
-export const incrementMessagesAndTokens = async (clientId, tokens = 0) => {
+export const incrementMessagesAndTokens = async (clientId, tokens = 0, inputToken = 0, outputToken = 0) => {
   try {
     const date = getStartOfDay();
 
@@ -49,8 +49,10 @@ export const incrementMessagesAndTokens = async (clientId, tokens = 0) => {
       { clientId, date },
       {
         $inc: {
-          "metrics.messagesHandled": 1,
+          "metrics.messagesHandled": 2,
           "metrics.tokenUsed": tokens,
+          "metrics.inputToken": inputToken,
+          "metrics.outputToken": outputToken,
         },
       },
       { upsert: true, new: true },

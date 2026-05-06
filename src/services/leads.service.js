@@ -2,6 +2,7 @@ import Leads from "../models/Leads.js";
 import { serviceResponse } from "../utils/serviceResponseBody.js";
 import { getClientId } from "./client.service.js";
 import { getExpireDate } from "../utils/getExpireDate.js";
+import { incrementDailyLead } from "./dailyAnalytics.service.js";
 
 // CREATE LEAD
 export const createLead = async (senderNumber, clientId) => {
@@ -20,7 +21,7 @@ export const createLead = async (senderNumber, clientId) => {
       phone: senderNumber,
       expireAt: getExpireDate(),
     });
-
+    incrementDailyLead(clientId).then(()=>{}).catch((e)=>{});
     return serviceResponse(true, "Lead created", newLead);
   } catch (e) {
     return serviceResponse(false, e.message || "DB ERROR", {});

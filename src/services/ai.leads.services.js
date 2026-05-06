@@ -5,6 +5,7 @@ import {
   updateCachedLead,
   updateExtractedFacts,
 } from "./lead.cache.service.js";
+import { incrementDailyConversion } from "./dailyAnalytics.service.js";
 
 export const handleLeadActions = async (data, cliendId, phone, lead) => {
   try {
@@ -43,6 +44,7 @@ export const handleLeadActions = async (data, cliendId, phone, lead) => {
     if (data.goalReached) {
       if (lead.goalReached !== data.goalReached) {
         updateToCache.goalReached = data.goalReached;
+        incrementDailyConversion(cliendId).then(()=>{}).catch((e)=>{});
         console.log("Goal Reached");
       }
     }

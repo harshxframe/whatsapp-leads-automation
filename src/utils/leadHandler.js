@@ -23,6 +23,15 @@ export const processLeadMessage = async (
   });
   const call = res?.functionCalls?.[0];
 
+  const { usageMetadata } = res;
+  // Logic: Output tokens mein 'thoughts' (reasoning) ko include karna best practice hai
+  const inputToken = usageMetadata ? usageMetadata.promptTokenCount : 0;
+  const outputToken = usageMetadata
+    ? usageMetadata.candidatesTokenCount +
+      (usageMetadata.thoughtsTokenCount || 0)
+    : 0;
+  const totalTokens = usageMetadata ? usageMetadata.totalTokenCount : 0;
+
   if (!call) {
     console.log("No function call, AI failure");
     return null;
@@ -36,5 +45,10 @@ export const processLeadMessage = async (
     .catch((err) => console.error("Action error:", err));
 
   // immediate response
-  return data.responseToUser;
+  return {
+    userResponse: data.responseToUser,
+    inputToken,
+    outputToken,
+    totalTokens,
+  };
 };

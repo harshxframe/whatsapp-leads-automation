@@ -17,6 +17,7 @@ import { SYSTEM_PROMPT } from "../utils/systemPrompt.js";
 import { historyNormalizer } from "../utils/chatHistoryNormiliser.js";
 import { processLeadMessage } from "../utils/leadHandler.js";
 import { leadsDbQueue } from "../jobs/queue/dbQueue.js";
+import { incrementMessagesAndTokens } from "../services/dailyAnalytics.service.js";
 
 export const whatsappHandShake = async (req, res) => {
   try {
@@ -179,13 +180,14 @@ export const whatsappWebHook = async (req, res) => {
       )
         .then(() => {})
         .catch((e) => console.log("Failed to show indicator"));
-      const userResponse = await processLeadMessage(
-        finalChatHistory,
-        systemInstruction_sy,
-        _id,
-        sendBy,
-        lead
-      );
+      const { userResponse, inputToken, outputToken, totalTokens } =
+        await processLeadMessage(
+          finalChatHistory,
+          systemInstruction_sy,
+          _id,
+          sendBy,
+          lead,
+        );
       if (userResponse) {
         const aiResponseObject = { role: "model", content: userResponse };
         await leadsDbQueue.add("Save History in queue", {
@@ -204,7 +206,9 @@ export const whatsappWebHook = async (req, res) => {
           userResponse,
           process.env.WHATSAPP_MASTER_TOKEN,
         );
-
+        incrementMessagesAndTokens(_id, totalTokens, inputToken, outputToken)
+          .then(() => {})
+          .catch((e) => {});
         console.log("Message sent successfully! ID:", result.messages[0].id);
         return console.log("AI Response: " + userResponse);
       }
