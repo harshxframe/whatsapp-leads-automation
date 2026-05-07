@@ -11,10 +11,14 @@ export const leadFunction = {
         type: "string",
         enum: ["NEW", "INTERESTED", "HOT", "CLOSED"],
       },
-      goalReached: { type: "boolean" },
+      goalReached: {
+        type: "boolean",
+        description:
+          "true ONLY when the lead explicitly confirms the conversionGoal (e.g. agrees to site visit, books a call). Not on intent — on confirmation.",
+      },
       dealHotSendEmailToClient: { type: "boolean" },
       dealClosedSendEmailToClient: { type: "boolean" },
     },
-    required: ["responseToUser", "stage"],
+    required: ["responseToUser", "stage", "goalReached"],
   },
 };

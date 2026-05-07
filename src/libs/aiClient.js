@@ -12,24 +12,27 @@ export const generateAIResponse = async ({
   toolConfig,
   systemInstruction,
 }) => {
-  try {
-    const res = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: chatHistory,
-      // systemInstruction: {
-      //   role: "system",
-      //   parts: [{ text: systemInstruction }], // Tumhara Master Closer Prompt
-      // },
-      config: {
-        tools,
-        toolConfig,
-        temperature: 0.6,
-      },
-    });
+  const MAX_RETRIES = 3;
 
-    return res;
-  } catch (err) {
-    console.error("AI Error:", err.message);
-    return null;
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const res = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: chatHistory,
+        config: {
+          tools,
+          toolConfig,
+          temperature: 0.6,
+        },
+      });
+
+      if (res) return res;
+
+      console.warn(`Attempt ${attempt}: Received null response. Retrying...`);
+    } catch (err) {
+      console.error(`Attempt ${attempt} failed:`, err.message);
+      if (attempt === MAX_RETRIES) return null;
+    }
   }
+  return null;
 };

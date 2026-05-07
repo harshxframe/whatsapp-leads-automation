@@ -13,7 +13,7 @@ import {
 } from "../services/lead.cache.service.js";
 import { isMissing } from "../utils/fieldValidation.js";
 import Leads from "../models/Leads.js";
-import { SYSTEM_PROMPT } from "../utils/systemPrompt.js";
+import { SYSTEM_PROMPT, USER_DATA_PROMPT } from "../utils/systemPrompt.js";
 import { historyNormalizer } from "../utils/chatHistoryNormiliser.js";
 import { processLeadMessage } from "../utils/leadHandler.js";
 import { leadsDbQueue } from "../jobs/queue/dbQueue.js";
@@ -137,10 +137,6 @@ export const whatsappWebHook = async (req, res) => {
       // Now we will move it to gemini, Prepare a tampalate
       const systemInstruction_sy = SYSTEM_PROMPT(
         businessName,
-        name,
-        interest,
-        extractedData,
-        stage,
         conversionGoal,
         aiSettings.tone,
         aiSettings.responseStyle,
@@ -150,6 +146,18 @@ export const whatsappWebHook = async (req, res) => {
         ownerName,
         services,
         industry,
+      );
+
+      const leasData_sy = USER_DATA_PROMPT(
+        name,
+        phone,
+        interest,
+        extractedData,
+        stage,
+        goalReached,
+        isEmailSentOnHot,
+        isEmailSentOnClosed,
+        lastInteraction,
       );
       let finalChatHistory = [];
 
@@ -164,6 +172,11 @@ export const whatsappWebHook = async (req, res) => {
           ...historyNormalizer([{ role: "user", content: content }]),
         );
       }
+      finalChatHistory.unshift(
+        ...historyNormalizer([
+          { role: "model", content: leasData_sy },
+        ]),
+      );
       finalChatHistory.unshift(
         ...historyNormalizer([
           { role: "model", content: systemInstruction_sy },
@@ -198,7 +211,7 @@ export const whatsappWebHook = async (req, res) => {
           latestUserChatObject,
           aiResponseObject,
         ]);
-        await simulateTypingEffect(userResponse);
+       // await simulateTypingEffect(userResponse);
         // 3. Send the AI generated response
         const result = await sendWhatsAppMessage(
           botPhoneId,
