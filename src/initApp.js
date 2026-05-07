@@ -10,12 +10,14 @@ import clientRouter from "./routes/client.route.js";
 import handShakeRouter from "./routes/whatsapp.route.js";
 import { onRedis } from "./config/redis.js";
 import analyticsRouter from "./routes/dailyAnalytics.route.js";
+import { syncAllIndex } from "./utils/syncIndexes.js";
 
 
 
 const initApp = async () => {
     onRedis();
     await connectDB();
+    await syncAllIndex();
     const app = express();
     app.use(cors())
     app.use(express.json());
