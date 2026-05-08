@@ -8,6 +8,8 @@ export const processLeadMessage = async (
   _id,
   sendBy,
   lead,
+  ownerName,
+  email,
 ) => {
   const res = await generateAIResponse({
     chatHistory,
@@ -40,7 +42,7 @@ export const processLeadMessage = async (
   const data = call.args;
 
   // RUN IN BACKGROUND
-  handleLeadActions(data, _id, sendBy, lead)
+  handleLeadActions(data, _id, sendBy, lead, ownerName, email)
     .then(() => console.log("Actions done"))
     .catch((err) => console.error("Action error:", err));
 

@@ -3,8 +3,8 @@ import { SendMailClient } from "zeptomail";
 import dotenv from "dotenv";
 dotenv.config();
 
-const url = env.ZEPTO_MAIL_HOST;
-const token = env.ZEPTO_MAIL_TOKEN;
+const url = process.env.ZEPTO_MAIL_HOST;
+const token = process.env.ZEPTO_MAIL_TOKEN;
 
 const client = new SendMailClient({ url, token });
 
@@ -19,7 +19,7 @@ const client = new SendMailClient({ url, token });
  * @returns {Promise<{success:boolean, status?:number, message:string, raw?:any, error?:any}>}
  */
 
-export async function sendEmail(adminAddress, adminName, to, subject, userName, emailBody) {
+async function sendEmail(adminAddress, adminName, to, subject, userName, emailBody) {
   if (!adminAddress || !to || !subject || !emailBody) {
     return {
       success: false,

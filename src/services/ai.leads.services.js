@@ -6,8 +6,16 @@ import {
   updateExtractedFacts,
 } from "./lead.cache.service.js";
 import { incrementDailyConversion } from "./dailyAnalytics.service.js";
+import { sendNotification } from "../utils/emailSendHelper.js";
 
-export const handleLeadActions = async (data, cliendId, phone, lead) => {
+export const handleLeadActions = async (
+  data,
+  cliendId,
+  phone,
+  lead,
+  ownerName,
+  email,
+) => {
   try {
     let updateToCache = {
       metaData: { clientId: cliendId, senderNumber: phone },
@@ -16,48 +24,54 @@ export const handleLeadActions = async (data, cliendId, phone, lead) => {
     if (data.name) {
       if (lead.name !== data.name) {
         updateToCache.name = data.name;
-        console.log("Update Name:", data.name);
       }
     }
 
     if (data.interest) {
       if (lead.interest !== data.interest) {
         updateToCache.interest = data.interest;
-        console.log("Update Interest:", data.interest);
       }
     }
 
     if (data.extractedFact) {
       if (!lead.extractedData.includes(data.extractedFact)) {
         updateToCache.extractedData = data.extractedFact;
-        console.log("Save Extracted Data:", data.extractedFact);
       }
     }
 
     if (data.stage) {
       if (lead.stage !== data.stage) {
         updateToCache.stage = data.stage;
-        console.log("Update Stage:", data.stage);
       }
     }
 
     if (data.goalReached) {
       if (lead.goalReached !== data.goalReached) {
         updateToCache.goalReached = data.goalReached;
-        incrementDailyConversion(cliendId).then(()=>{}).catch((e)=>{});
-        console.log("Goal Reached");
+        incrementDailyConversion(cliendId)
+          .then(() => {})
+          .catch((e) => {});
       }
     }
 
     if (data.dealHotSendEmailToClient) {
       if (
-        String(data.dealHotSendEmailToClient) !==
-        String(lead.isEmailSentOnHot)
+        String(data.dealHotSendEmailToClient) !== String(lead.isEmailSentOnHot)
       ) {
-        updateToCache.isEmailSentOnHot = String(
-          data.dealHotSendEmailToClient,
-        );
-        console.log("Send HOT email");
+        updateToCache.isEmailSentOnHot = String(data.dealHotSendEmailToClient);
+        //Send Notifcation when lead seems hot
+        sendNotification(
+          lead.name || data.name,
+          lead.phone,
+          lead.interest || data.interest,
+          lead.extractedData,
+          lead.stage || data.stage,
+          email,
+          ownerName,
+          "ON_HOT",
+        )
+          .then(() => {})
+          .catch((e) => {});
       }
     }
 
@@ -69,7 +83,18 @@ export const handleLeadActions = async (data, cliendId, phone, lead) => {
         updateToCache.isEmailSentOnClosed = String(
           data.dealClosedSendEmailToClient,
         );
-        console.log("Send CLOSED email");
+        sendNotification(
+          lead.name || data.name,
+          lead.phone,
+          lead.interest || data.interest,
+          lead.extractedData,
+          lead.stage || data.stage,
+          email,
+          ownerName,
+          "ON_CLOSED",
+        )
+          .then(() => {})
+          .catch((e) => {});
       }
     }
 
