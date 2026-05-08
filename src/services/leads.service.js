@@ -147,3 +147,45 @@ export const updateLeadsExtractedFact = async (
     return serviceResponse(false, e.message || "DB ERROR", {});
   }
 };
+
+export const getLeadsByDateRange = async (clientId, days = 7) => {
+  try {
+    const dateThreshold = new Date();
+    dateThreshold.setDate(dateThreshold.getDate() - days);
+
+    const leads = await Leads.find({
+      clientId,
+      createdAt: { $gte: dateThreshold },
+    }).sort({ createdAt: -1 });
+
+    return serviceResponse(
+      true,
+      `Leads from the last ${days} days retrieved`,
+      leads
+    );
+  } catch (e) {
+    return serviceResponse(false, e.message || "DB ERROR", {});
+  }
+};
+
+export const getLeadsPaginated = async (clientId, page = 1, limit = 10) => {
+  try {
+    const skip = (page - 1) * limit;
+
+    const leads = await Leads.find({ clientId })
+      .sort({ createdAt: -1 }) // Newest first
+      .skip(skip)
+      .limit(limit);
+
+    const totalLeads = await Leads.countDocuments({ clientId });
+
+    return serviceResponse(true, "Leads retrieved successfully", {
+      leads,
+      currentPage: page,
+      totalPages: Math.ceil(totalLeads / limit),
+      totalLeads,
+    });
+  } catch (e) {
+    return serviceResponse(false, e.message || "DB ERROR", {});
+  }
+};
