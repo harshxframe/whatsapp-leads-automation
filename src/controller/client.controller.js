@@ -23,7 +23,6 @@ export const createClient = async (req, res) => {
       responseStyle,
       conversionGoal,
       numberID,
-      googleSheetID,
       notifyOwner,
     } = req.body;
 
@@ -40,7 +39,6 @@ export const createClient = async (req, res) => {
       isMissing(responseStyle) ||
       isMissing(conversionGoal) ||
       isMissing(numberID) ||
-      isMissing(googleSheetID) ||
       isMissing(notifyOwner) //
     ) {
       return res
@@ -62,7 +60,6 @@ export const createClient = async (req, res) => {
       responseStyle,
       conversionGoal,
       numberID,
-      googleSheetID,
       notifyOwner,
     };
 
@@ -127,7 +124,6 @@ export const updateClient = async (req, res) => {
       responseStyle,
       conversionGoal,
       numberID,
-      googleSheetID,
       notifyOwner,
       active,
     } = req.body;
@@ -150,7 +146,6 @@ export const updateClient = async (req, res) => {
       isMissing(responseStyle) &&
       isMissing(conversionGoal) &&
       isMissing(numberID) &&
-      isMissing(googleSheetID) &&
       isMissing(active) &&
       isMissing(notifyOwner)
     ) {
@@ -180,7 +175,6 @@ export const updateClient = async (req, res) => {
     if (numberID) updateData["whatsapp.numberID"] = numberID;
 
     // 4. Automation (FLATTENED KEYS)
-    if (googleSheetID) updateData["automation.googleSheetID"] = googleSheetID;
     if (notifyOwner !== undefined)
       updateData["automation.notifyOwner"] = notifyOwner;
 

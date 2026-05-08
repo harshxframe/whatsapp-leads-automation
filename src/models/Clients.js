@@ -45,7 +45,6 @@ const ClientSchema = new mongoose.Schema(
 
     // AUTOMATION
     automation: {
-      googleSheetID: String,
       notifyOwner: { type: Boolean, default: true },
     },
     active: { type: Boolean, default: true },

@@ -31,7 +31,6 @@ export const clientCreationService = async (payload) => {
       },
 
       automation: {
-        googleSheetID: payload.googleSheetID,
         notifyOwner: payload.notifyOwner,
       },
     });

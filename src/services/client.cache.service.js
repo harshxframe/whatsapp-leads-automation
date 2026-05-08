@@ -27,7 +27,6 @@ const flattenClient = (client) => ({
   leadsGenerated: String(client.analytics?.leadsGenerated || 0),
   conversions: String(client.analytics?.conversions || 0),
 
-  googleSheetID: client.automation?.googleSheetID || "",
   notifyOwner: String(client.automation?.notifyOwner ?? true),
 
   active: String(client.active ?? true),
@@ -87,7 +86,6 @@ export const getCachedClient = async (numberID) => {
     },
 
     automation: {
-      googleSheetID: data.googleSheetID,
       notifyOwner: data.notifyOwner === "true",
     },
 
