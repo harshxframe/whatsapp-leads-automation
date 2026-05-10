@@ -207,3 +207,12 @@ export const getClientId = async (clientNumber) => {
   return client?._id || null;
 };
 
+// helper: get clientId from numberID
+export const getClientIdByEmail = async (email) => {
+  const client = await Clients.findOne({
+    "email": email,
+  }).lean();
+
+  return client?._id || null;
+};
+

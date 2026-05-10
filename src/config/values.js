@@ -1,4 +1,7 @@
 export const values = {
     adminEmail: "alerts@korexbase.com",
-    adminName: "Korexbase AI"
+    noReplyEmail: "noreply@korexbase.com",
+    adminName: "Korexbase AI",
+    companyName: "Korexbase"
+
 }

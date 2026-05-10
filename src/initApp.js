@@ -12,6 +12,7 @@ import { onRedis } from "./config/redis.js";
 import analyticsRouter from "./routes/dailyAnalytics.route.js";
 import { syncAllIndex } from "./utils/syncIndexes.js";
 import leadsRouter from "./routes/leads.route.js";
+import authRouter from "./routes/auth.route.js";
 
 
 
@@ -24,6 +25,7 @@ const initApp = async () => {
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     app.get("/health", healthMiddleware);
+    app.use("/auth",authRouter)
     app.use("/app/v1", clientRouter);
     app.use("/handShake", handShakeRouter);
     app.use("/analytics", analyticsRouter);

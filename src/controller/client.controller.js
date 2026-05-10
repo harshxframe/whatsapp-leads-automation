@@ -1,12 +1,15 @@
 import {
   clientCreationService,
   getAllClients,
+  getClientId,
+  getClientIdByEmail,
   getClientService,
   updateClientBlock,
   updateClientService,
 } from "../services/client.service.js";
 import { responseBody } from "../utils/responseBody.js";
 import { isMissing } from "../utils/fieldValidation.js";
+import { generateToken } from "../utils/jwtHelper.js";
 
 export const createClient = async (req, res) => {
   try {
@@ -260,6 +263,41 @@ export const getClients = async (req, res) => {
     return res
       .status(400)
       .send(responseBody(400, true, false, result.message, {}));
+  } catch (e) {
+    return res
+      .status(500)
+      .send(responseBody(500, true, false, e.message || "Server Error", {}));
+  }
+};
+
+export const clientLogin = async (req, res) => {
+  try {
+    const { email } = req.body;
+    //Check email is present or not
+    if (!email) {
+      return res
+        .status(400)
+        .send(responseBody(400, false, false, "Email not satisfied", {}));
+    }
+
+    const getId = await getClientIdByEmail(email);
+    if (getId) {
+      //Now we have ID, here we need to convert into token and send.
+      const getToken = generateToken(getId);
+
+      return res
+        .status(200)
+        .send(
+          responseBody(200, false, true, "Token genrated successfull", {
+            token: getToken,
+          }),
+        );
+    }
+
+    // Service failure
+    return res
+      .status(400)
+      .send(responseBody(400, true, false, "Client not found", {}));
   } catch (e) {
     return res
       .status(500)
