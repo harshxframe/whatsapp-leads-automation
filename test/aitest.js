@@ -6,7 +6,7 @@ dotenv.config();
 
 
 const ai = new GoogleGenAI({
-  apiKey: "AIzaSyBS_lu0figtP7JGu9rgZ0abgXURUUCT2bw"
+  apiKey: "XXXXXXXxxxxxxxXXXXXXXXXXXxxxxxxxXXXXX"
 });
 
 
